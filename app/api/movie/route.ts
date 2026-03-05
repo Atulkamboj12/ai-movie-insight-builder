@@ -28,17 +28,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Movie not found" }, { status: 404 });
     }
 
-    // ---------------------------
+    // -----------------------------
     // Fetch Reddit discussions
-    // ---------------------------
+    // -----------------------------
 
     let reviews: string[] = [];
 
     try {
       const redditRes = await fetch(
-        `https://www.reddit.com/search.json?q=${encodeURIComponent(
+        `https://www.reddit.com/r/movies/search.json?q=${encodeURIComponent(
           movieData.Title
-        )}+movie&limit=5`,
+        )}&limit=5&restrict_sr=1`,
         {
           headers: {
             "User-Agent": "AI-Movie-Insight-App",
@@ -49,23 +49,24 @@ export async function POST(req: Request) {
       const redditData = await redditRes.json();
 
       reviews =
-        redditData?.data?.children?.map(
-          (post: any) => post.data.title || "Interesting audience discussion"
-        ) || [];
+        redditData?.data?.children
+          ?.map((post: any) => post.data.title)
+          ?.filter(Boolean) || [];
+
     } catch (error) {
-      console.log("Reddit fetch error:", error);
+      console.log("Reddit error:", error);
     }
 
     if (reviews.length === 0) {
-      reviews = ["No audience discussions found on Reddit."];
+      reviews = ["No audience discussions found for this movie."];
     }
 
-    // ---------------------------
-    // Basic Sentiment Analysis
-    // ---------------------------
+    // -----------------------------
+    // Basic Sentiment
+    // -----------------------------
 
-    const positiveWords = ["good", "great", "amazing", "best", "love", "awesome"];
-    const negativeWords = ["bad", "worst", "boring", "hate", "terrible"];
+    const positiveWords = ["good", "great", "amazing", "best", "love"];
+    const negativeWords = ["bad", "worst", "boring", "hate"];
 
     let score = 0;
 
@@ -88,15 +89,11 @@ export async function POST(req: Request) {
 
     const ai_summary = `
 Audience Sentiment Summary:
-Viewers are actively discussing "${movieData.Title}" on Reddit.
+Viewers are discussing "${movieData.Title}" on Reddit.
 Overall reactions appear mostly ${sentiment.toLowerCase()}.
 
 Overall Sentiment: ${sentiment}
 `;
-
-    // ---------------------------
-    // Response
-    // ---------------------------
 
     const movie = {
       title: movieData.Title,
@@ -110,6 +107,7 @@ Overall Sentiment: ${sentiment}
     };
 
     return NextResponse.json(movie);
+
   } catch (error) {
     console.error(error);
 

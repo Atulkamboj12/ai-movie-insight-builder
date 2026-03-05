@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="3bc14e32-9543-4e6c-b945-27d81d3c00f3" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/app/api/movie/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/movie/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/page.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
