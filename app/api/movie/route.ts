@@ -14,6 +14,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "OMDB API key missing" }, { status: 500 });
     }
 
+    // Fetch movie from OMDB
     const movieRes = await fetch(
       `https://www.omdbapi.com/?i=${imdbId}&apikey=${apiKey}`
     );
@@ -24,6 +25,59 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Movie not found" }, { status: 404 });
     }
 
+    // Fetch Reddit discussions
+    let reviews: string[] = [];
+
+    try {
+      const redditRes = await fetch(
+        `https://www.reddit.com/search.json?q=${movieData.Title}&limit=5`
+      );
+
+      const redditData = await redditRes.json();
+
+      reviews =
+        redditData?.data?.children?.map(
+          (post: any) => post.data.title || "Interesting audience discussion"
+        ) || [];
+    } catch {
+      reviews = ["Could not fetch Reddit discussions."];
+    }
+
+    if (reviews.length === 0) {
+      reviews = ["No audience discussions found."];
+    }
+
+    // Simple sentiment logic
+    let sentiment = "Neutral";
+
+    const positiveWords = ["good", "great", "amazing", "best", "love"];
+    const negativeWords = ["bad", "worst", "boring", "hate"];
+
+    let score = 0;
+
+    reviews.forEach((review) => {
+      const text = review.toLowerCase();
+
+      positiveWords.forEach((word) => {
+        if (text.includes(word)) score++;
+      });
+
+      negativeWords.forEach((word) => {
+        if (text.includes(word)) score--;
+      });
+    });
+
+    if (score > 0) sentiment = "Positive";
+    if (score < 0) sentiment = "Negative";
+
+    const ai_summary = `
+Audience Sentiment Summary:
+Viewers are actively discussing "${movieData.Title}" on Reddit.
+Overall reactions appear mostly ${sentiment.toLowerCase()}.
+
+Overall Sentiment: ${sentiment}
+`;
+
     const movie = {
       title: movieData.Title,
       poster: movieData.Poster,
@@ -31,19 +85,14 @@ export async function POST(req: Request) {
       rating: movieData.imdbRating,
       plot: movieData.Plot,
       cast: movieData.Actors,
-      reviews: [
-        "Audience praised the movie overall.",
-        "Performances and visuals received appreciation.",
-        "Some viewers mentioned pacing issues.",
-        "Overall audience sentiment appears positive."
-      ],
-      ai_summary:
-        "Audience Sentiment Summary: Most viewers enjoyed the performances and overall entertainment value. Overall Sentiment: Positive."
+      reviews,
+      ai_summary,
     };
 
     return NextResponse.json(movie);
   } catch (error) {
     console.error(error);
+
     return NextResponse.json(
       { error: "Server error while fetching movie data." },
       { status: 500 }

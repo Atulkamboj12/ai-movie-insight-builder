@@ -7,25 +7,27 @@ export default function Home() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchMovie = async () => {
+  const analyzeMovie = async () => {
     if (!imdbId) return;
 
     setLoading(true);
 
-    const res = await fetch("/api/movie", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ imdbId }),
-    });
+    try {
+      const res = await fetch("/api/movie", {
+        method: "POST",
+        body: JSON.stringify({ imdbId }),
+      });
 
-    const result = await res.json();
-    setData(result);
+      const result = await res.json();
+      setData(result);
+    } catch {
+      alert("Error fetching movie.");
+    }
+
     setLoading(false);
   };
 
-  const clearMovie = () => {
+  const clearData = () => {
     setData(null);
     setImdbId("");
   };
@@ -33,125 +35,65 @@ export default function Home() {
   return (
     <div>
 
-      {/* HERO SECTION */}
-
+      {/* HERO */}
       <div className="hero">
-
         <h1>🎬 AI Movie Insight Builder</h1>
-
         <p>Analyze audience reviews and sentiment for any movie</p>
 
         <div className="searchBox">
-
           <input
-            placeholder="Enter IMDb ID (tt3896198)"
             value={imdbId}
             onChange={(e) => setImdbId(e.target.value)}
+            placeholder="Enter IMDb ID (tt3896198)"
           />
 
-          <button
-            className="btn btn-blue"
-            onClick={fetchMovie}
-          >
-            Analyze
+          <button onClick={analyzeMovie}>
+            {loading ? "Analyzing..." : "Analyze"}
           </button>
 
-          {data && (
-            <button
-              className="btn btn-red"
-              onClick={clearMovie}
-            >
-              Clear
-            </button>
-          )}
-
+          <button className="clearBtn" onClick={clearData}>
+            Clear
+          </button>
         </div>
-
       </div>
 
-      {/* MAIN CONTENT */}
-
+      {/* RESULTS */}
       <div className="container">
-
-        {loading && <p>Analyzing movie...</p>}
-
         {data && (
-
-          <div>
-
-            {/* MOVIE CARD */}
-
+          <>
+            {/* Movie Card */}
             <div className="movieCard">
-
-              <img
-                src={data.poster}
-                className="poster"
-              />
+              <img src={data.poster} alt="poster" />
 
               <div>
-
                 <h2>{data.title}</h2>
 
                 <p><b>Year:</b> {data.year}</p>
-
                 <p><b>Rating:</b> ⭐ {data.rating}</p>
-
                 <p><b>Cast:</b> {data.cast}</p>
-
-                <p>
-                  <b>Plot:</b> {data.plot}
-                </p>
-
+                <p><b>Plot:</b> {data.plot}</p>
               </div>
-
             </div>
 
-            {/* AUDIENCE INSIGHT */}
-
-            <div className="insight">
-
+            {/* AI Insight */}
+            <div className="insightBox">
               <h3>📊 Audience Insight</h3>
-
               <p>{data.ai_summary}</p>
-
-              {data.ai_summary.includes("Positive") && (
-                <span className="badge positive">🟢 Positive</span>
-              )}
-
-              {data.ai_summary.includes("Mixed") && (
-                <span className="badge mixed">🟡 Mixed</span>
-              )}
-
-              {data.ai_summary.includes("Negative") && (
-                <span className="badge negative">🔴 Negative</span>
-              )}
-
             </div>
 
-            {/* REVIEWS */}
-
+            {/* Reviews */}
             <h3 style={{ marginTop: "30px" }}>💬 Audience Reviews</h3>
 
-            <div style={{ maxWidth: "900px", margin: "auto" }}>
-
-              {data.reviews.map((review: string, index: number) => (
-
+            <div className="reviews">
+              {data.reviews?.map((review: string, index: number) => (
                 <div key={index} className="review">
-
-                  <b>Review {index + 1}:</b> {review}
-
+                  {review}
                 </div>
-
               ))}
-
             </div>
-
-          </div>
-
+          </>
         )}
-
       </div>
-
     </div>
   );
 }
