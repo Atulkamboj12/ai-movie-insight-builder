@@ -34,7 +34,6 @@ export default function Home() {
 
   return (
     <div>
-      {/* Hero */}
       <div className="hero">
         <h1>🎬 AI Movie Insight Builder</h1>
         <p>Analyze audience reviews and sentiment for any movie</p>
@@ -56,38 +55,26 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Results */}
       <div className="container">
         {data && (
           <>
-            {/* Movie Card */}
             <div className="movieCard">
               <img src={data.poster} alt="poster" />
 
               <div>
                 <h2>{data.title}</h2>
-                <p>
-                  <b>Year:</b> {data.year}
-                </p>
-                <p>
-                  <b>Rating:</b> ⭐ {data.rating}
-                </p>
-                <p>
-                  <b>Cast:</b> {data.cast}
-                </p>
-                <p>
-                  <b>Plot:</b> {data.plot}
-                </p>
+                <p><b>Year:</b> {data.year}</p>
+                <p><b>Rating:</b> ⭐ {data.rating}</p>
+                <p><b>Cast:</b> {data.cast}</p>
+                <p><b>Plot:</b> {data.plot}</p>
               </div>
             </div>
 
-            {/* AI Insight */}
             <div className="insightBox">
               <h3>📊 Audience Insight</h3>
               <p>{data.ai_summary}</p>
             </div>
 
-            {/* Reviews */}
             <h3 style={{ marginTop: "30px" }}>💬 Audience Reviews</h3>
 
             <div className="reviews">
