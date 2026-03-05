@@ -34,8 +34,7 @@ export default function Home() {
 
   return (
     <div>
-
-      {/* HERO */}
+      {/* Hero */}
       <div className="hero">
         <h1>🎬 AI Movie Insight Builder</h1>
         <p>Analyze audience reviews and sentiment for any movie</p>
@@ -57,7 +56,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* RESULTS */}
+      {/* Results */}
       <div className="container">
         {data && (
           <>
@@ -67,11 +66,18 @@ export default function Home() {
 
               <div>
                 <h2>{data.title}</h2>
-
-                <p><b>Year:</b> {data.year}</p>
-                <p><b>Rating:</b> ⭐ {data.rating}</p>
-                <p><b>Cast:</b> {data.cast}</p>
-                <p><b>Plot:</b> {data.plot}</p>
+                <p>
+                  <b>Year:</b> {data.year}
+                </p>
+                <p>
+                  <b>Rating:</b> ⭐ {data.rating}
+                </p>
+                <p>
+                  <b>Cast:</b> {data.cast}
+                </p>
+                <p>
+                  <b>Plot:</b> {data.plot}
+                </p>
               </div>
             </div>
 

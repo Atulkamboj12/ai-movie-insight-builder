@@ -11,10 +11,13 @@ export async function POST(req: Request) {
     const apiKey = process.env.OMDB_API_KEY;
 
     if (!apiKey) {
-      return NextResponse.json({ error: "OMDB API key missing" }, { status: 500 });
+      return NextResponse.json(
+        { error: "OMDB API key missing" },
+        { status: 500 }
+      );
     }
 
-    // Fetch movie from OMDB
+    // Fetch movie details
     const movieRes = await fetch(
       `https://www.omdbapi.com/?i=${imdbId}&apikey=${apiKey}`
     );
@@ -25,12 +28,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Movie not found" }, { status: 404 });
     }
 
+    // ---------------------------
     // Fetch Reddit discussions
+    // ---------------------------
+
     let reviews: string[] = [];
 
     try {
       const redditRes = await fetch(
-        `https://www.reddit.com/search.json?q=${movieData.Title}&limit=5`
+        `https://www.reddit.com/search.json?q=${encodeURIComponent(
+          movieData.Title
+        )}+movie&limit=5`,
+        {
+          headers: {
+            "User-Agent": "AI-Movie-Insight-App",
+          },
+        }
       );
 
       const redditData = await redditRes.json();
@@ -39,19 +52,20 @@ export async function POST(req: Request) {
         redditData?.data?.children?.map(
           (post: any) => post.data.title || "Interesting audience discussion"
         ) || [];
-    } catch {
-      reviews = ["Could not fetch Reddit discussions."];
+    } catch (error) {
+      console.log("Reddit fetch error:", error);
     }
 
     if (reviews.length === 0) {
-      reviews = ["No audience discussions found."];
+      reviews = ["No audience discussions found on Reddit."];
     }
 
-    // Simple sentiment logic
-    let sentiment = "Neutral";
+    // ---------------------------
+    // Basic Sentiment Analysis
+    // ---------------------------
 
-    const positiveWords = ["good", "great", "amazing", "best", "love"];
-    const negativeWords = ["bad", "worst", "boring", "hate"];
+    const positiveWords = ["good", "great", "amazing", "best", "love", "awesome"];
+    const negativeWords = ["bad", "worst", "boring", "hate", "terrible"];
 
     let score = 0;
 
@@ -67,6 +81,8 @@ export async function POST(req: Request) {
       });
     });
 
+    let sentiment = "Neutral";
+
     if (score > 0) sentiment = "Positive";
     if (score < 0) sentiment = "Negative";
 
@@ -77,6 +93,10 @@ Overall reactions appear mostly ${sentiment.toLowerCase()}.
 
 Overall Sentiment: ${sentiment}
 `;
+
+    // ---------------------------
+    // Response
+    // ---------------------------
 
     const movie = {
       title: movieData.Title,
